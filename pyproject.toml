@@ -1,0 +1,16 @@
+[project]
+name = "audiotagger"
+version = "0.1.0"
+description = "CLI for audio files tagging and renaming"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "mutagen>=1.48.1",
+]
+
+[project.scripts]
+audiotagger = "audiotagger:main"
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"
