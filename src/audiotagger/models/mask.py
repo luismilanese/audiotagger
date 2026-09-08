@@ -35,15 +35,3 @@ class MaskEngine:
         pattern = r'[\\/:*?"<>|]+'
         sanitized = re.sub(pattern, " ", filename)
         return sanitized.strip()
-
-
-if __name__ == "__main__":
-    meta = AudioMetadata(
-        artist="Burzum",
-        album="Filosofem",
-        title="Jesu død<>",
-        track_number="2",
-        year="1996",
-    )
-
-    print(MaskEngine.apply("%track_number% ~ %title%", meta))
