@@ -9,7 +9,7 @@ dependencies = [
 ]
 
 [project.scripts]
-audiotagger = "audiotagger:main"
+audiotagger = "audiotagger.main:main"
 
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]

@@ -1,11 +1,9 @@
-from pathlib import Path
-
-from audiotagger.models import file_handling
-
-folder = Path("/home/luis/Code/audiotagger/test_files")
+from audiotagger.controllers.cli import CLIController
 
 
-files = [file for file in folder.iterdir() if file.is_file()]
+def main():
+    CLIController.main()
 
-for file in files:
-    file_handling.rename(file)
+
+if __name__ == "__main__":
+    main()

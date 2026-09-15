@@ -7,7 +7,7 @@ from audiotagger.models.metadata import RenameResult
 
 class FileRenamer:
     @staticmethod
-    def rename(file_path: Path, mask: str, dry_run: bool = False) -> RenameResult:
+    def rename(file_path: Path, mask: str, dry_run: bool = True) -> RenameResult:
         audio_metadata = MP3MetadataExtractor.extract(file_path=file_path)
         new_name = MaskEngine.apply(mask, audio_metadata)
         new_path = file_path.with_name(f"{new_name}{file_path.suffix}")
@@ -37,3 +37,23 @@ class FileRenamer:
             rename_result.error_message = str(e)
 
         return rename_result
+
+    @classmethod
+    def rename_all(
+        cls, path: Path, mask: str, dry_run: bool = True
+    ) -> list[RenameResult]:
+        result = []
+        if path.is_file():
+            ret = cls.rename(path, mask, dry_run)
+            result.append(ret)
+            return result
+
+        if path.is_dir():
+            audio_files = [
+                f for f in path.iterdir() if f.is_file() and f.suffix.lower() == ".mp3"
+            ]
+            for audio_file in audio_files:
+                ret = cls.rename(audio_file, mask, dry_run)
+                result.append(ret)
+
+        return result
