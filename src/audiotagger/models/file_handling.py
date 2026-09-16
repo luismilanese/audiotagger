@@ -1,6 +1,12 @@
 from pathlib import Path
 
-from audiotagger.models.extractors import MP3MetadataExtractor
+from mutagen import MutagenError
+
+from audiotagger.models.extractors import (
+    AudioFileMetadataExtractor,
+    InvalidAudioFileException,
+)
+from audiotagger.models.formats import FormatsAllowed
 from audiotagger.models.mask import MaskEngine
 from audiotagger.models.metadata import RenameResult
 
@@ -8,7 +14,16 @@ from audiotagger.models.metadata import RenameResult
 class FileRenamer:
     @staticmethod
     def rename(file_path: Path, mask: str, dry_run: bool = True) -> RenameResult:
-        audio_metadata = MP3MetadataExtractor.extract(file_path=file_path)
+        try:
+            audio_metadata = AudioFileMetadataExtractor.extract(file_path=file_path)
+        except (MutagenError, InvalidAudioFileException, OSError) as e:
+            return RenameResult(
+                original_path=file_path,
+                new_path=file_path,
+                success=False,
+                error_message=str(e),
+            )
+
         new_name = MaskEngine.apply(mask, audio_metadata)
         new_path = file_path.with_name(f"{new_name}{file_path.suffix}")
 
@@ -50,7 +65,9 @@ class FileRenamer:
 
         if path.is_dir():
             audio_files = [
-                f for f in path.iterdir() if f.is_file() and f.suffix.lower() == ".mp3"
+                f
+                for f in path.iterdir()
+                if f.is_file() and f.suffix.lower() in FormatsAllowed
             ]
             for audio_file in audio_files:
                 ret = cls.rename(audio_file, mask, dry_run)

@@ -1,19 +1,35 @@
 from pathlib import Path
-from typing import Protocol
 
-from mutagen.easyid3 import EasyID3
-
+from audiotagger.models.formats import (
+    AudioFileContext,
+    AudioFileFactory,
+    FormatsAllowed,
+)
 from audiotagger.models.metadata import AudioMetadata
 
 
-class MetadataExtractor(Protocol):
-    def extract(self, file_path: Path) -> AudioMetadata: ...
+def detect_format(file_path: str) -> FormatsAllowed | None:
+    if not Path(file_path).is_file():
+        return None
+
+    for fmt in FormatsAllowed:
+        if file_path.lower().endswith(fmt.value):
+            return fmt
+    return None
 
 
-class MP3MetadataExtractor:
+class InvalidAudioFileException(Exception): ...
+
+
+class AudioFileMetadataExtractor:
     @staticmethod
     def extract(file_path: Path) -> AudioMetadata:
-        audio = EasyID3(file_path)
+        format_detected = detect_format(str(file_path))
+        if format_detected == None:
+            raise InvalidAudioFileException(f"invalid audio file: {file_path}")
+
+        audio_file_context = AudioFileContext(format_detected, file_path)
+        audio = AudioFileFactory.create_audio_file(audio_file_context)
 
         def get_first(key: str) -> str | None:
             values = audio.get(key)
