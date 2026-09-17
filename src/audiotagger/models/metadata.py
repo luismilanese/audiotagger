@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from audiotagger.models import formats
+
 
 @dataclass
 class AudioMetadata:
@@ -17,3 +19,9 @@ class RenameResult:
     new_path: Path
     success: bool
     error_message: str | None
+
+
+@dataclass
+class AudioFileContext:
+    file_format: formats.FormatsSupported
+    file_path: Path

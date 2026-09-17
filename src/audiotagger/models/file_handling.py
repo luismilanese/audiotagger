@@ -2,11 +2,12 @@ from pathlib import Path
 
 from mutagen import MutagenError
 
-from audiotagger.models.extractors import (
-    AudioFileMetadataExtractor,
+from audiotagger.models.exceptions import (
     InvalidAudioFileException,
+    InvalidPathException,
 )
-from audiotagger.models.formats import FormatsAllowed
+from audiotagger.models.extractors import AudioFileMetadataExtractor
+from audiotagger.models.formats import FormatsSupported
 from audiotagger.models.mask import MaskEngine
 from audiotagger.models.metadata import RenameResult
 
@@ -38,25 +39,35 @@ class FileRenamer:
             return rename_result
 
         if new_path.exists():
-            rename_result.success = False
-            rename_result.error_message = "There is a file with this name already"
-            return rename_result
+            return RenameResult(
+                original_path=file_path,
+                new_path=file_path,
+                success=False,
+                error_message="there is a file with this name already",
+            )
 
         if dry_run:
             return rename_result
 
         try:
             file_path.rename(new_path)
+            return rename_result
         except OSError as e:
-            rename_result.success = False
-            rename_result.error_message = str(e)
-
-        return rename_result
+            return RenameResult(
+                original_path=file_path,
+                new_path=file_path,
+                success=False,
+                error_message=str(e),
+            )
 
     @classmethod
     def rename_all(
         cls, path: Path, mask: str, dry_run: bool = True
     ) -> list[RenameResult]:
+
+        if not path.is_file() and not path.is_dir():
+            raise InvalidPathException("the provided path isn't a file or a directory")
+
         result = []
         if path.is_file():
             ret = cls.rename(path, mask, dry_run)
@@ -67,7 +78,7 @@ class FileRenamer:
             audio_files = [
                 f
                 for f in path.iterdir()
-                if f.is_file() and f.suffix.lower() in FormatsAllowed
+                if f.is_file() and f.suffix.lower() in FormatsSupported
             ]
             for audio_file in audio_files:
                 ret = cls.rename(audio_file, mask, dry_run)

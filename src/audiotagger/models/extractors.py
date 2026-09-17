@@ -1,35 +1,30 @@
 from pathlib import Path
 
+from audiotagger.models.exceptions import (
+    InvalidAudioFileException,
+)
 from audiotagger.models.formats import (
     AudioFileContext,
     AudioFileFactory,
-    FormatsAllowed,
+    detect_format,
 )
 from audiotagger.models.metadata import AudioMetadata
-
-
-def detect_format(file_path: str) -> FormatsAllowed | None:
-    if not Path(file_path).is_file():
-        return None
-
-    for fmt in FormatsAllowed:
-        if file_path.lower().endswith(fmt.value):
-            return fmt
-    return None
-
-
-class InvalidAudioFileException(Exception): ...
 
 
 class AudioFileMetadataExtractor:
     @staticmethod
     def extract(file_path: Path) -> AudioMetadata:
         format_detected = detect_format(str(file_path))
-        if format_detected == None:
+        if format_detected is None:
             raise InvalidAudioFileException(f"invalid audio file: {file_path}")
 
         audio_file_context = AudioFileContext(format_detected, file_path)
         audio = AudioFileFactory.create_audio_file(audio_file_context)
+
+        if audio is None:
+            raise InvalidAudioFileException(
+                f"audio file could not be processed: {file_path}"
+            )
 
         def get_first(key: str) -> str | None:
             values = audio.get(key)

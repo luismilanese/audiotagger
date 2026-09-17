@@ -33,5 +33,7 @@ class MaskEngine:
     @staticmethod
     def _sanitize_filename(filename: str) -> str:
         pattern = r'[\\/:*?"<>|]+'
-        sanitized = re.sub(pattern, " ", filename)
-        return sanitized.strip()
+        sanitized = re.sub(pattern, " ", filename).strip()
+        if sanitized.endswith("."):
+            sanitized = sanitized[0:-1]
+        return sanitized

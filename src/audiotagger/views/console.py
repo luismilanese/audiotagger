@@ -16,9 +16,15 @@ class ConsoleView:
         errors = 0
         successes = 0
 
+        if len(results) == 0:
+            print(
+                f"{FontStyles.YELLOW}{FontStyles.BOLD}[Warning]: {FontStyles.RESET}{FontStyles.YELLOW}No supported audio files found in the provided path{FontStyles.RESET}"
+            )
+            return
+
         if is_dry_run:
             print(
-                f"{FontStyles.YELLOW}[Preview Mode]: No changes have been written to disk. Use {FontStyles.BOLD}--apply{FontStyles.RESET} {FontStyles.YELLOW}to write them.{FontStyles.RESET}"
+                f"{FontStyles.YELLOW}{FontStyles.BOLD}[Preview Mode]: {FontStyles.RESET}{FontStyles.YELLOW}No changes have been written to disk. Use {FontStyles.BOLD}--apply{FontStyles.RESET} {FontStyles.YELLOW}to write them.{FontStyles.RESET}"
             )
 
         for rename_result in results:
@@ -38,10 +44,16 @@ class ConsoleView:
                 continue
 
             print(
-                f"{FontStyles.BOLD}Old file name: {rename_result.original_path.name} \nNew file name: {rename_result.new_path.name}\n"
+                f"{FontStyles.BOLD}Old file name: {rename_result.original_path.name}{FontStyles.RESET}\nNew file name: {rename_result.new_path.name}\n"
             )
 
         print("=" * 50)
         print("Files processed:     ", len(results))
         print("Successfully renamed:", successes)
         print("Errors:              ", errors)
+
+    @staticmethod
+    def display_errors(msg: str):
+        print(
+            f"{FontStyles.RED}{FontStyles.BOLD}[Error] {FontStyles.RESET}{FontStyles.RED}{msg}{FontStyles.RESET}"
+        )

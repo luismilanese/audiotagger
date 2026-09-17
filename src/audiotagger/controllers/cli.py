@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+from audiotagger.models.exceptions import InvalidPathException
 from audiotagger.models.file_handling import FileRenamer
 from audiotagger.views.console import ConsoleView
 
@@ -21,9 +22,8 @@ class CLIController:
             "-a", "--apply", action="store_true", help="write the changes to disk"
         )
         args = parser.parse_args()
-        renamed_files = FileRenamer.rename_all(args.path, args.mask, not args.apply)
-        ConsoleView.display_results(renamed_files, not args.apply)
-
-
-if __name__ == "__main__":
-    CLIController.main()
+        try:
+            renamed_files = FileRenamer.rename_all(args.path, args.mask, not args.apply)
+            ConsoleView.display_results(renamed_files, not args.apply)
+        except InvalidPathException as e:
+            ConsoleView.display_errors(str(e))
